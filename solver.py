@@ -4,24 +4,24 @@ from utils import is_valid_network, average_pairwise_distance, average_pairwise_
 import sys
 
 def solve(G):
-    unexplored = []
-    start_vertex = list(G.nodes())[0]
-    tree = nx.Graph()
-    tree.add_node(start_vertex)
-    for vertex in G.neighbors(start_vertex):
-        unexplored.append(vertex)
-    current_node = start_vertex
-    while current_node != None:
-        next_node = choose_best_neighbor(G, tree)
-        current_node = next_node
-        if current_node != None:
-            for vertex in G.neighbors(current_node):
-                if vertex not in unexplored:
-                    if vertex not in tree.nodes():
-                        unexplored.append(vertex)
-            unexplored.remove(current_node)
-
-    return remove_leaves(G, tree)
+#     unexplored = []
+#     start_vertex = list(G.nodes())[0]
+#     tree = nx.Graph()
+#     tree.add_node(start_vertex)
+#     for vertex in G.neighbors(start_vertex):
+#         unexplored.append(vertex)
+#     current_node = start_vertex
+#     while current_node != None:
+#         next_node = choose_best_neighbor(G, tree)
+#         current_node = next_node
+#         if current_node != None:
+#             for vertex in G.neighbors(current_node):
+#                 if vertex not in unexplored:
+#                     if vertex not in tree.nodes():
+#                         unexplored.append(vertex)
+#             unexplored.remove(current_node)
+    mst = nx.minimum_spanning_tree(G)
+    return remove_leaves(G, mst)
 
 def choose_best_neighbor(G, tree):
     least_pairwise_distance = float('inf')
