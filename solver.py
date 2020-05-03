@@ -4,25 +4,24 @@ from utils import is_valid_network, average_pairwise_distance, average_pairwise_
 import sys
 
 def solve(G):
-#     unexplored = []
-#     start_vertex = list(G.nodes())[0]
-#     tree = nx.Graph()
-#     tree.add_node(start_vertex)
-#     for vertex in G.neighbors(start_vertex):
-#     	unexplored.append(vertex)
-#     current_node = start_vertex
-#     while current_node != None:
-#         next_node = choose_best_neighbor(G, tree)
-#         current_node = next_node
-#         if current_node != None:
-#             for vertex in G.neighbors(current_node):
-#                 if vertex not in unexplored:
-#                     if vertex not in tree.nodes():
-#                         unexplored.append(vertex)
-#             unexplored.remove(current_node)
+    unexplored = []
+    start_vertex = list(G.nodes())[0]
+    tree = nx.Graph()
+    tree.add_node(start_vertex)
+    for vertex in G.neighbors(start_vertex):
+        unexplored.append(vertex)
+    current_node = start_vertex
+    while current_node != None:
+        next_node = choose_best_neighbor(G, tree)
+        current_node = next_node
+        if current_node != None:
+            for vertex in G.neighbors(current_node):
+                if vertex not in unexplored:
+                    if vertex not in tree.nodes():
+                        unexplored.append(vertex)
+            unexplored.remove(current_node)
 
-    mst = nx.minimum_spanning_tree(G)
-    return remove_leaves(G, mst)
+    return remove_leaves(G, tree)
 
 def choose_best_neighbor(G, tree):
     least_pairwise_distance = float('inf')
@@ -31,7 +30,8 @@ def choose_best_neighbor(G, tree):
     for t in tree.nodes():
        for n in list(G.neighbors(t)):
             if n not in tree.nodes():
-                tree.add_edge(t, n)
+                edge_weight = G[t][n]['weight']
+                tree.add_edge(t, n, weight=edge_weight)
                 pairwise_distance = average_pairwise_distance_fast(tree)
                 if pairwise_distance < least_pairwise_distance:
                     least_pairwise_vertex = t
@@ -39,23 +39,26 @@ def choose_best_neighbor(G, tree):
                     least_pairwise_distance = pairwise_distance
                 tree.remove_node(n) 
     if (least_pairwise_vertex != None and least_pairwise_neighbor != None):
-        tree.add_edge(least_pairwise_vertex, least_pairwise_neighbor)
+        edge_weight = G[least_pairwise_vertex][least_pairwise_neighbor]['weight']
+        tree.add_edge(least_pairwise_vertex, least_pairwise_neighbor, weight=edge_weight)
     return least_pairwise_neighbor
 
 def remove_leaves(G, tree):
     all_leaves = []
     new_leaves = find_new_leaves(tree, [],  all_leaves)
     for leaf in new_leaves:
-        cost_with_leaf = average_pairwise_distance(tree)
+        cost_with_leaf = average_pairwise_distance_fast(tree)
         for neighbor in tree.neighbors(leaf):
             neighbor_leaf = neighbor
         tree.remove_node(leaf) 
-        cost_without_leaf = average_pairwise_distance(tree)
+        cost_without_leaf = average_pairwise_distance_fast(tree)
         if (nx.is_dominating_set(G, tree.nodes())):
              if cost_with_leaf < cost_without_leaf:
-                 tree.add_edge(neighbor_leaf, leaf)
+                 edge_weight = G[neighbor_leaf][leaf]['weight']
+                 tree.add_edge(neighbor_leaf, leaf, weight=edge_weight)
         else:
-            tree.add_edge(leaf, neighbor_leaf)
+            edge_weight = G[neighbor_leaf][leaf]['weight']
+            tree.add_edge(leaf, neighbor_leaf, weight=edge_weight)
         new_leaves.remove(leaf)
         new_leaves = find_new_leaves(tree, new_leaves, all_leaves)
     return tree
