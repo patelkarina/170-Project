@@ -4,6 +4,20 @@ from utils import is_valid_network, average_pairwise_distance, average_pairwise_
 import sys
 
 def solve(G):
+    
+    #complete graph
+    n = G.number_of_nodes()
+    number_of_complete_graph_edges = (n * (n-1))/2
+    if (G.number_of_edges() == number_of_complete_graph_edges):
+        tree = nx.Graph()
+        tree.add_node(list(G.nodes())[0])
+        return tree
+
+    #already a tree
+    if nx.is_tree(G):
+        tree = G.copy()
+        return remove_leaves(G, tree)
+
     unexplored = []
     start_vertex = list(G.nodes())[0]
     tree = nx.Graph()
@@ -20,7 +34,7 @@ def solve(G):
                     if vertex not in tree.nodes():
                         unexplored.append(vertex)
             unexplored.remove(current_node)
-
+    
     return remove_leaves(G, tree)
 
 def choose_best_neighbor(G, tree):
