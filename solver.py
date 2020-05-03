@@ -4,20 +4,46 @@ from utils import is_valid_network, average_pairwise_distance, average_pairwise_
 import sys
 
 def solve(G):
-    
-    #complete graph
+
     n = G.number_of_nodes()
+    e = G.number_of_edges()
+    #graph with all edges < 1
+    for v in G.nodes():
+        for k in G.neighbors(v):
+            if G[v][k]['weight'] >= 1:
+                mst = apd_mst(G)
+                return remove_leaves(G, mst)
+    return nx.minimum_spanning_tree(G)
+    
+    #complete graph with edges > 1
     number_of_complete_graph_edges = (n * (n-1))/2
-    if (G.number_of_edges() == number_of_complete_graph_edges):
+    if (e == number_of_complete_graph_edges):
         tree = nx.Graph()
         tree.add_node(list(G.nodes())[0])
         return tree
+
+    #spokewheel
+    nodes = G.nodes()
+    for node in nodes:
+        if G.degree(node) == n-1:
+            tree = nx.Graph()
+            tree.add_node(node)
+            return tree
+
+    #circle
+
 
     #already a tree
     if nx.is_tree(G):
         tree = G.copy()
         return remove_leaves(G, tree)
 
+
+    #regular case
+    mst = apd_mst(G)
+    return remove_leaves(G, mst)
+
+def apd_mst(G):
     unexplored = []
     start_vertex = list(G.nodes())[0]
     tree = nx.Graph()
@@ -35,7 +61,7 @@ def solve(G):
                         unexplored.append(vertex)
             unexplored.remove(current_node)
     
-    return remove_leaves(G, tree)
+    return tree
 
 def choose_best_neighbor(G, tree):
     least_pairwise_distance = float('inf')
