@@ -39,22 +39,25 @@ def solve(G):
     
     #circle
     if is_circle(G):
+        tree = G.copy()
         greatest_sum = 0
         best_nodes = []
         for node in nodes:
             temp_sum = 0
-            for neighbor in list(G.neighbors(node)):
-                temp_sum += G[node][neighbor]['weight']
-                for n_of_n in list(G.neighbors(neighbor)):
-                    if n_of_n != node:
-                        temp_sum += G[neighbor][n_of_n]['weight']
-                        if temp_sum > greatest_sum:
-                            greatest_sum = temp_sum
-                            best_nodes = [node, neighbor, n_of_n]
-                            temp_sum -= G[neighbor][n_of_n]['weight']
-        for node in best_nodes:
-            G.remove_node(node)
-        return G
+            for neighbor in list(tree.neighbors(node)):
+                temp_sum += tree[node][neighbor]['weight']
+                neighbors_of_neighbor = list(tree.neighbors(neighbor))
+                neighbors_of_neighbor.remove(node)
+                n_of_n = neighbors_of_neighbor[0]
+                temp_sum += tree[neighbor][n_of_n]['weight']
+                if temp_sum > greatest_sum:
+                    greatest_sum = temp_sum
+                    best_nodes = [node, neighbor, n_of_n]
+            temp_sum = 0
+        tree.remove_edge(best_nodes[0], best_nodes[1])
+        tree.remove_edge(best_nodes[1], best_nodes[2])
+        tree.remove_node(best_nodes[1])
+        return tree
 
     #regular case
     mst = apd_mst(G)
@@ -77,7 +80,6 @@ def apd_mst(G):
                     if vertex not in tree.nodes():
                         unexplored.append(vertex)
             unexplored.remove(current_node)
-    
     return tree
 
 def choose_best_neighbor(G, tree):
