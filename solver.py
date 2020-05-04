@@ -7,13 +7,23 @@ def solve(G):
 
     n = G.number_of_nodes()
     e = G.number_of_edges()
+    nodes = G.nodes()
+
+    #spokewheel
+    for node in nodes:
+        if G.degree(node) == n-1:
+            tree = nx.Graph()
+            tree.add_node(node)
+            return tree    
+    
     #graph with all edges < 1
-    for v in G.nodes():
+    count = 0
+    for v in nodes:
         for k in G.neighbors(v):
-            if G[v][k]['weight'] >= 1:
-                mst = apd_mst(G)
-                return remove_leaves(G, mst)
-    return nx.minimum_spanning_tree(G)
+            if G[v][k]['weight'] < 1:
+                count += 1
+    if count == 2*e:
+        return nx.minimum_spanning_tree(G)
     
     #complete graph with edges > 1
     number_of_complete_graph_edges = (n * (n-1))/2
@@ -21,23 +31,30 @@ def solve(G):
         tree = nx.Graph()
         tree.add_node(list(G.nodes())[0])
         return tree
-
-    #spokewheel
-    nodes = G.nodes()
-    for node in nodes:
-        if G.degree(node) == n-1:
-            tree = nx.Graph()
-            tree.add_node(node)
-            return tree
-
-    #circle
-
-
+    
     #already a tree
     if nx.is_tree(G):
         tree = G.copy()
         return remove_leaves(G, tree)
-
+    
+    #circle
+    if is_circle(G):
+        greatest_sum = 0
+        best_nodes = []
+        for node in nodes:
+            temp_sum = 0
+            for neighbor in list(G.neighbors(node)):
+                temp_sum += G[node][neighbor]['weight']
+                for n_of_n in list(G.neighbors(neighbor)):
+                    if n_of_n != node:
+                        temp_sum += G[neighbor][n_of_n]['weight']
+                        if temp_sum > greatest_sum:
+                            greatest_sum = temp_sum
+                            best_nodes = [node, neighbor, n_of_n]
+                            temp_sum -= G[neighbor][n_of_n]['weight']
+        for node in best_nodes:
+            G.remove_node(node)
+        return G
 
     #regular case
     mst = apd_mst(G)
@@ -93,7 +110,7 @@ def remove_leaves(G, tree):
         tree.remove_node(leaf) 
         cost_without_leaf = average_pairwise_distance_fast(tree)
         if (nx.is_dominating_set(G, tree.nodes())):
-             if cost_with_leaf < cost_without_leaf:
+             if cost_with_leaf <= cost_without_leaf:
                  edge_weight = G[neighbor_leaf][leaf]['weight']
                  tree.add_edge(neighbor_leaf, leaf, weight=edge_weight)
         else:
@@ -110,7 +127,14 @@ def find_new_leaves(tree, new_leaves, all_leaves):
             new_leaves.append(v)
     return new_leaves
 
-
+def is_circle(G):
+    for node in G.nodes():
+        if G.degree(node) != 2:
+            return False
+    if G.number_of_nodes() != G.number_of_edges():
+        return False
+    else: 
+        return True
 
 # Here's an example of how to run your solver.
 
