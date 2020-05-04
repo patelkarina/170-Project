@@ -17,6 +17,6 @@ When writing inputs/outputs:
 - These are the functions run by the autograder to validate submissions
 
 How to run the algorithm:
--move into the appropriate project directory ('cd 170-Project')
--run 'python3 max_st.py' to run/solve all the inputs
--the solved files will be in the outputs directory ('cd outputs', 'ls')
+- Move into the appropriate project directory ('cd 170-Project')
+- Run 'python3 max_st.py' to run/solve all the inputs
+- The solved files will be in the outputs directory ('cd outputs', 'ls')
